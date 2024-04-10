@@ -1,5 +1,5 @@
-import Types.Board
-import Types.Coord2D
+import Types.Direction.Direction
+import Types.{Board, Coord2D, Direction}
 
 import scala.io.Source
 
@@ -55,6 +55,67 @@ class Tasks() {
     })
 
     (upperCaseWords, coord2DPositions)
+  }
+
+  //T4- Preencher os espaços vazios do tabuleiro aleatoriamente(não devia retornar o board só?)
+//  def completeBoardRandomly(board: Board, r: MyRandom, f: MyRandom => (Char, MyRandom)): (Board, MyRandom)
+
+  // T5: Verificar se a palavra existe no tabuleiro a partir de uma posição e direção inicial
+  def play(board: Board, word: String, startCoord: Coord2D, direction: Direction): Boolean = {
+    val (row, col) = startCoord
+    val wordLength = word.length
+
+    def checkWord(currentRow: Int, currentCol: Int, charIndex: Int): Boolean = {
+      if (charIndex == wordLength) true
+      else if (currentRow < 0 || currentRow >= board.length || currentCol < 0 || currentCol >= board(currentRow).length) false
+      else if (board(currentRow)(currentCol) != word(charIndex)) false
+      else {
+        val (dRow, dCol) = direction match {
+          case Direction.North => (-1, 0)
+          case Direction.South => (1, 0)
+          case Direction.East => (0, 1)
+          case Direction.West => (0, -1)
+          case Direction.NorthEast => (-1, 1)
+          case Direction.NorthWest => (-1, -1)
+          case Direction.SouthEast => (1, 1)
+          case Direction.SouthWest => (1, -1)
+        }
+        checkWord(currentRow + dRow, currentCol + dCol, charIndex + 1)
+      }
+    }
+
+    checkWord(row, col, 0)
+  }
+
+  def play2(board: Board, word: String, startCoord: Coord2D): Boolean = {
+    val wordLength = word.length
+
+    // Função auxiliar para verificar a palavra a partir de uma posição e direção
+    def checkWordFromPosition(currentCoord: Coord2D, charIndex: Int, visited: Set[Coord2D]): Boolean = {
+      if (charIndex == wordLength) true // Verificamos toda a palavra
+      else if (!board.indices.contains(currentCoord._1) || !board(currentCoord._1).indices.contains(currentCoord._2)) false // Coordenada fora do tabuleiro
+      else if (visited.contains(currentCoord)) false // Coordenada já visitada
+      else if (board(currentCoord._1)(currentCoord._2) != word(charIndex)) false // Letra diferente
+      else {
+        // Verifica todas as posições adjacentes
+        val adjacentCoords = List(
+          (currentCoord._1 - 1, currentCoord._2), // Norte
+          (currentCoord._1 + 1, currentCoord._2), // Sul
+          (currentCoord._1, currentCoord._2 - 1), // Oeste
+          (currentCoord._1, currentCoord._2 + 1), // Leste
+          (currentCoord._1 - 1, currentCoord._2 - 1), // Noroeste
+          (currentCoord._1 - 1, currentCoord._2 + 1), // Nordeste
+          (currentCoord._1 + 1, currentCoord._2 - 1), // Sudoeste
+          (currentCoord._1 + 1, currentCoord._2 + 1) // Sudeste
+        )
+
+        // Verifica a palavra para cada posição adjacente
+        adjacentCoords.exists(adjCoord => checkWordFromPosition(adjCoord, charIndex + 1, visited + currentCoord))
+      }
+    }
+
+    // Inicia a verificação a partir da posição inicial
+    checkWordFromPosition(startCoord, 0, Set.empty)
   }
 
 

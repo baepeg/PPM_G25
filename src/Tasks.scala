@@ -57,5 +57,31 @@ class Tasks() {
     (upperCaseWords, coord2DPositions)
   }
 
+    // T5: Verificar se a palavra existe no tabuleiro a partir de uma posição e direção inicial
+  def play(board: Board, word: String, startCoord: Coord2D, direction: Direction): Boolean = {
+    val (row, col) = startCoord
+    val wordLength = word.length
+
+    def checkWord(currentRow: Int, currentCol: Int, charIndex: Int): Boolean = {
+      if (charIndex == wordLength) true
+      else if (currentRow < 0 || currentRow >= board.length || currentCol < 0 || currentCol >= board(currentRow).length) false
+      else if (board(currentRow)(currentCol) != word(charIndex)) false
+      else {
+        val (dRow, dCol) = direction match {
+          case Direction.North => (-1, 0)
+          case Direction.South => (1, 0)
+          case Direction.East => (0, 1)
+          case Direction.West => (0, -1)
+          case Direction.NorthEast => (-1, 1)
+          case Direction.NorthWest => (-1, -1)
+          case Direction.SouthEast => (1, 1)
+          case Direction.SouthWest => (1, -1)
+        }
+        checkWord(currentRow + dRow, currentCol + dCol, charIndex + 1)
+      }
+    }
+
+    checkWord(row, col, 0)
+  }
 
 }
